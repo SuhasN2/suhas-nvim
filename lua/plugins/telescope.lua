@@ -5,7 +5,11 @@ return {
   {
     "nvim-telescope/telescope.nvim",
     tag = "0.1.5",
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = { 
+      "nvim-lua/plenary.nvim",
+      -- Added fzf-native dependency
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
+    },
     config = function()
       require("telescope").setup({
         extensions = {
@@ -19,7 +23,9 @@ return {
       vim.keymap.set("n", "<leader>fg", builtin.live_grep, {})
       vim.keymap.set("n", "<leader><leader>", builtin.oldfiles, {})
 
+      -- Load extensions
       require("telescope").load_extension("ui-select")
+      require("telescope").load_extension("fzf")
     end,
   },
 }
