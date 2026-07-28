@@ -1,3 +1,1 @@
-print("fuck you:")
-print("what the fuck?")
-
+print("test")
