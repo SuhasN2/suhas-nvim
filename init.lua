@@ -14,3 +14,4 @@ vim.opt.rtp:prepend(lazypath)
 require("vim-options")
 require("lazy").setup("plugins")
 vim.g.mapleader = " " -- Sets leader to Spacebar
+vim.keymap.set('i', 'jk', '<Esc>', { noremap = true, silent = true })

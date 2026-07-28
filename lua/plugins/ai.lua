@@ -1,23 +1,23 @@
 return {
     -- ==========================================
-    -- 1. LOCAL GHOST TEXT (RTX 4060 Ti )
+    -- 1. LOCAL GHOST TEXT with OLLAMA 
     -- ==========================================
     {
         "milanglacier/minuet-ai.nvim",
         config = function()
             require("minuet").setup({
-                -- Switch from chat simulation to native Fill-In-The-Middle
                 provider = "openai_fim_compatible",
                 provider_options = {
                     openai_fim_compatible = {
-                        model = "qwen2.5-coder:7b-base", -- Swap to base variant for pure code completion
-                        end_point = "http://localhost:11434/v1/completions", -- Pure text engine endpoint
+                        model = "qwen2.5-coder:7b-base",
+                        end_point = "http://localhost:11434/v1/completions",
                         api_key = "TERM",
                         name = "Ollama",
                         stream = true,
                         optional = {
                             stop = { "<|endoftext|>", "<|file_separator|>", "\n\n" },
                             max_tokens = 128,
+                            temperature = 0.2,
                         },
                     },
                 },
@@ -25,7 +25,7 @@ return {
                     auto_trigger_ft = { "python", "rust", "c", "cpp", "go", "lua" },
                     keymap = {
                         accept = "<C-g>",
-                        accept_line = "<A-a>",
+                        accept_line = "<Tab>",
                         dismiss = "<A-e>",
                         next = "<A-]>",
                         prev = "<A-[>",
@@ -34,9 +34,8 @@ return {
             })
         end,
     },
-
     -- ==========================================
-    -- 2. SMART CHAT & FIX (OpenRouter Fix)
+    -- 2. SMART CHAT (OpenRouter Dual-Tier)
     -- ==========================================
     {
         "olimorris/codecompanion.nvim",
@@ -45,32 +44,55 @@ return {
             "nvim-treesitter/nvim-treesitter",
         },
         config = function()
-            local openrouter_adapter = require("codecompanion.adapters").extend("openai", {
-                url = "https://openrouter.ai/api/v1/chat/completions",
-                env = {
-                    -- Pulling key safely from environment to prevent future leaks
-                    api_key = os.getenv("OPENROUTER_API_KEY"),
-                },
-                headers = {
-                    ["HTTP-Referer"] = "https://github.com/olimorris/codecompanion.nvim",
-                    ["X-Title"] = "Suhas-Nvim",
-                },
-                schema = {
-                    model = {
-                        default = "qwen/qwen3-vl-30b-a3b-thinking",
-                    },
-                    -- Great catch here; keeping stream false protects against thinking chunk crashes
-                    stream = { default = false },
-                },
-            })
-
             require("codecompanion").setup({
                 strategies = {
-                    chat = { adapter = openrouter_adapter },
-                    inline = { adapter = openrouter_adapter },
+                    chat = { adapter = "openrouter_flash" },
+                    inline = { adapter = "openrouter_flash" },
                 },
                 adapters = {
-                    openrouter = openrouter_adapter,
+                    http = {
+                        openrouter_flash = function()
+                            return require("codecompanion.adapters").extend("openai_compatible", {
+                                name = "openrouter_flash",
+                                env = {
+                                    url = "https://openrouter.ai/api",
+                                    api_key = "OPENROUTER_API_KEY",
+                                    chat_url = "/v1/chat/completions",
+                                },
+                                headers = {
+                                    ["HTTP-Referer"] = "https://github.com/olimorris/codecompanion.nvim",
+                                    ["X-Title"] = "Suhas-Nvim",
+                                },
+                                schema = {
+                                    model = {
+                                        default = "deepseek/deepseek-v4-flash",
+                                    },
+                                    stream = { default = false },
+                                },
+                            })
+                        end,
+
+                        openrouter_pro = function()
+                            return require("codecompanion.adapters").extend("openai_compatible", {
+                                name = "openrouter_pro",
+                                env = {
+                                    url = "https://openrouter.ai/api",
+                                    api_key = "OPENROUTER_API_KEY",
+                                    chat_url = "/v1/chat/completions",
+                                },
+                                headers = {
+                                    ["HTTP-Referer"] = "https://github.com/olimorris/codecompanion.nvim",
+                                    ["X-Title"] = "Suhas-Nvim",
+                                },
+                                schema = {
+                                    model = {
+                                        default = "deepseek/deepseek-v4-pro",
+                                    },
+                                    stream = { default = false },
+                                },
+                            })
+                        end,
+                    },
                 },
             })
 
